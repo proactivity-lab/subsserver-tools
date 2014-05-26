@@ -77,9 +77,9 @@ def main():
 
     parser = argparse.ArgumentParser(description="Socket data receiver", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument("--webservice", default=9998, type=int, help="9998")
-    parser.add_argument("--socket", default="/tmp/subsserver_data_receiver.sock", type=str, help="/tmp/subsserver_data_receiver.sock")
-    parser.add_argument("--tcp", default=9997, type=int, help="9997")
+    parser.add_argument("--webservice", default=None, type=int, help="9998")
+    parser.add_argument("--socket", default=None, type=str, help="/tmp/subsserver_data_receiver.sock")
+    parser.add_argument("--tcp", default=None, type=int, help="9997")
 
     args = parser.parse_args()
 
@@ -97,7 +97,7 @@ def main():
         tdr.name = "TCP"
 
     if wdr is None and sdr is None and tdr is None:
-        print("What do you want me to do?")
+        parser.print_help()
         exit(1)
 
     reactor.run()
