@@ -162,7 +162,7 @@ class MiddlewareStatus(object):
 
     def __init__(self, index=None):
         self.index = index
-        self.addr = self.state = self.cid = self.priority = self.last_broadcast = self.max_timeout = self.providers = None
+        self.addr = self.state = self.cid = self.priority = self.last_broadcast = self.max_timeout = self.providers = self.latest_data = None
 
     def parse(self, statusline, timestamp):
         m = re.search("\[([0-9]*)\] --.*", statusline)
@@ -171,15 +171,16 @@ class MiddlewareStatus(object):
             return True
 
         #"[%02u] s%u i%u p%u b%"PRIu32" c%u"
-        m = re.search("\[([0-9]*)\] s([0-9]*) i([0-9]+) p([0-9]+) b([0-9]+) t([0-9]+) c([0-9]+).*", statusline)
+        m = re.search("\[([0-9]*)\] s([0-9]*) i([0-9a-f]+) p([0-9]+) b([0-9]+) t([0-9]+) c([0-9]+) ld([0-9]+).*", statusline)
         if m is not None:
             self.index = int(m.group(1))
             self.state = int(m.group(2))
-            self.cid = int(m.group(3))
+            self.cid = int(m.group(3), 16)
             self.priority = int(m.group(4))
             self.last_broadcast = int(m.group(5))
             self.max_timeout = int(m.group(6))
             self.providers = int(m.group(7))
+            self.latest_data = int(m.group(8))
 
             if self.max_timeout == 0xFFFFFFFF:
                 self.max_timeout = "never"
@@ -194,7 +195,9 @@ class MiddlewareStatus(object):
         elif self.state is None:
             return "[%02u]   |        |  |          |          |  |          |" % (self.index)
         else:
-            return "[%02u]%3u|%8x|%2u|%10u|%10s|%2u|---TODO---|" % (self.index, self.state, self.cid, self.priority, self.last_broadcast, self.max_timeout, self.providers)
+            return "[%02u]%3u|%8x|%2u|%10u|%10s|%2u|%10u|" % (self.index, self.state, self.cid, self.priority,
+                                                              self.last_broadcast, self.max_timeout, self.providers,
+                                                              self.latest_data)
 
 
 class SchedulerStatus(object):
