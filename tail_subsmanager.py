@@ -27,7 +27,10 @@ class AddressStatus(object):
             try:
                 self.boot = calendar.timegm(datetime.datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S.%f").timetuple())
             except ValueError:
-                self.boot = None
+                try:
+                    self.boot = calendar.timegm(datetime.datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ").timetuple())
+                except ValueError:
+                    self.boot = None
             return True
 
     def __str__(self):
@@ -251,11 +254,12 @@ def tail_file(file_path, seek=0):
         line = logfile.readline()
         if line:
             line = line.lstrip().rstrip()
-            m = re.search("(.*):\s*[DIWE]\|(.*):[ 0-9]*\|(.*)", line)
+            m = re.search("(.*)[:']\s*[DIWE]\|(.*):[ 0-9]*\|(.*)", line)
             if m is not None:
                 timestamp, module, logline = m.groups()
                 module = module.strip()
                 timestamp = timestamp.strip()
+                logline.rstrip("'")
 
                 if module.startswith("sbslog"):
                     if logline.startswith("s"):
