@@ -168,7 +168,7 @@ class MiddlewareStatus(object):
 
     def __init__(self, index=None):
         self.index = index
-        self.addr = self.state = self.cid = self.priority = self.last_broadcast = self.max_timeout = self.providers = self.latest_data = None
+        self.addr = self.state = self.cid = self.priority = self.start = self.last_broadcast = self.max_timeout = self.providers = self.latest_data = None
 
     def parse(self, statusline, timestamp):
         m = re.search("\[([0-9]*)\] --.*", statusline)
@@ -177,16 +177,17 @@ class MiddlewareStatus(object):
             return True
 
         #"[%02u] s%u i%u p%u b%"PRIu32" c%u"
-        m = re.search("\[([0-9]*)\] s([0-9]*) i([0-9a-f]+) p([0-9]+) b([0-9]+) t([0-9]+) c([0-9]+) ld([0-9]+).*", statusline)
+        m = re.search("\[([0-9]*)\] s([0-9]*) i([0-9a-f]+) p([0-9]+) c([0-9]+) ([0-9]+)/([0-9]+)/([0-9]+)/([0-9]+).*", statusline)
         if m is not None:
             self.index = int(m.group(1))
             self.state = int(m.group(2))
             self.cid = int(m.group(3), 16)
             self.priority = int(m.group(4))
-            self.last_broadcast = int(m.group(5))
-            self.max_timeout = int(m.group(6))
-            self.providers = int(m.group(7))
-            self.latest_data = int(m.group(8))
+            self.providers = int(m.group(5))
+            self.start = int(m.group(6))
+            self.last_broadcast = int(m.group(7))
+            self.max_timeout = int(m.group(8))
+            self.latest_data = int(m.group(9))
 
             if self.max_timeout == 0xFFFFFFFF:
                 self.max_timeout = "never"
@@ -197,20 +198,20 @@ class MiddlewareStatus(object):
 
     def __str__(self):
         if self.index is None:
-            return "[mw]_st|__cid___|pp|_broadcast|_timeout__|pc|_last_data|"
+            return "[mw]_st|__cid___|pp|pc|__start___|_broadcast|timeout_pr|___data___|"
         elif self.state is None:
-            return "[%02u]   |        |  |          |          |  |          |" % (self.index)
+            return "[%02u]   |        |  |  |          |          |          |          |" % (self.index)
         else:
-            return "[%02u]%3u|%8x|%2u|%10u|%10s|%2u|%10u|" % (self.index, self.state, self.cid, self.priority,
-                                                              self.last_broadcast, self.max_timeout, self.providers,
-                                                              self.latest_data)
+            return "[%02u]%3u|%8x|%2u|%2u|%10u|%10u|%10s|%10u|" % (self.index, self.state, self.cid, self.priority,
+                                                                   self.providers, self.start, self.last_broadcast,
+                                                                   self.max_timeout, self.latest_data)
 
 
 class MiddlewareProviderStatus(object):
 
     def __init__(self, index=None):
         self.index = index
-        self.mote = self.expected = self.stream = self.contact = self.outgoing = self.timeout = None
+        self.mote = self.expected = self.stream = self.start = self.contact = self.outgoing = self.timeout = None
         self.live = False
 
     def parse(self, statusline, timestamp):
@@ -223,15 +224,16 @@ class MiddlewareProviderStatus(object):
             return True
 
         # "[%02u] m%02d e%u s%02x %PRIu32/%PRIu32/%PRIu32"
-        m = re.search("\[([0-9]*)\] m([0-9]+) e([01]+) s([0-9a-f]+) ([0-9]+)/([0-9]+)/([0-9]+).*", statusline)
+        m = re.search("\[([0-9]*)\] m([0-9]+) e([01]+) s([0-9a-f]+) ([0-9]+)/([0-9]+)/([0-9]+)/([0-9]+).*", statusline)
         if m is not None:
             self.index = int(m.group(1))
             self.mote = int(m.group(2))
             self.expected = int(m.group(3))
             self.stream = int(m.group(4), 16)
-            self.contact = int(m.group(5))
-            self.outgoing = int(m.group(6))
-            self.timeout = int(m.group(7))
+            self.start = int(m.group(5))
+            self.contact = int(m.group(6))
+            self.outgoing = int(m.group(7))
+            self.timeout = int(m.group(8))
             self.live = True
             return True
 
@@ -239,11 +241,11 @@ class MiddlewareProviderStatus(object):
 
     def __str__(self):
         if self.index is None:
-            return "   |mote|e|st|_contact__|_outgoing_|_timeout__|"
+            return "   |mote|e|st|__start___|_contact__|_outgoing_|timeout_tm|"
         elif not self.live:
-            return "   |    | |  |          |          |          |"
+            return "   |    | |  |          |          |          |          |"
         else:
-            return "   |%4u|%u|%2x|%10u|%10s|%10u|" % (self.mote, self.expected, self.stream, self.contact, self.outgoing, self.timeout)
+            return "   |%4u|%u|%2x|%10u|%10u|%10s|%10u|" % (self.mote, self.expected, self.stream, self.start, self.contact, self.outgoing, self.timeout)
 
 
 class SchedulerStatus(object):
