@@ -125,7 +125,7 @@ class StreamStatus(object):
     def __init__(self, index=None):
         self.index = index
         self.lid = 0xFF
-        self.mote = self.cid = self.slot = self.status = self.stored = self.contact = self.maintenance = self.data_out = None
+        self.mote = self.cid = self.slot = self.status = self.stored = self.start = self.contact = self.maintenance = self.data_out = None
 
     def parse(self, statusline, timestamp):
         # 2015-07-31T14:21:46.93Z 'D|sbslog: 594|[01] --'
@@ -135,7 +135,7 @@ class StreamStatus(object):
             return True
 
         # 2016-04-07 14:55:47.107 : D|  sbslog:  35|t[00|00] m02:834e(0)(1|0) 14/14
-        m = re.search("t\[([0-9]+)\|([0-9]+)\] m([-0-9]+):([0-9a-f]+)\(([0-9]+)\)\(([0-9]+)\|([0-9]+)\) ([0-9]+)/([0-9]+)/([0-9]+).*", statusline)
+        m = re.search("t\[([0-9]+)\|([0-9]+)\] m([-0-9]+):([0-9a-f]+)\(([0-9]+)\)\(([0-9]+)\|([0-9]+)\) ([0-9]+)/([0-9]+)/([0-9]+)/([0-9]+).*", statusline)
         if m is not None:
             print "match", m.groups()
             # ('00', 'F802', '4', '0', '0', '637', '638', '637')
@@ -146,9 +146,10 @@ class StreamStatus(object):
             self.slot = int(m.group(5))
             self.status = int(m.group(6))
             self.stored = int(m.group(7))
-            self.contact = int(m.group(8))
-            self.maintenance = int(m.group(9))
-            self.data_out = int(m.group(10))
+            self.start = int(m.group(8))
+            self.contact = int(m.group(9))
+            self.maintenance = int(m.group(10))
+            self.data_out = int(m.group(11))
             return True
         else:
             print "bad", statusline
@@ -157,11 +158,12 @@ class StreamStatus(object):
 
     def __str__(self):
         if self.index is None:
-            return "[ s| l]|mote|__cid___|ss|s|f|_contact__|_maint____|_data_____|"
+            return "[ s| l]|mote|__cid___|ss|s|f|__start___|_contact__|__mntnnc__|_data_out_|"
         elif self.mote is None:
-            return "[%02u|%s%s]|    |        |  | | |          |          |          |" % (self.index, " ", " ")
+            return "[%02u|%s%s]|    |        |  | | |          |          |          |          |" % (self.index, " ", " ")
         else:
-            return "[%02u|%02u]|%4d|%8x|%2u|%u|%u|%10u|%10u|%10u|" % (self.index, self.lid, self.mote, self.cid, self.slot, self.status, self.stored, self.contact, self.maintenance, self.data_out)
+            return "[%02u|%02u]|%4d|%8x|%2u|%u|%u|%10u|%10u|%10u|%10u|" % (self.index, self.lid, self.mote, self.cid, self.slot, self.status, self.stored,
+                                                                           self.start, self.contact, self.maintenance, self.data_out)
 
 
 class MiddlewareStatus(object):
