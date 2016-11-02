@@ -477,7 +477,7 @@ def main():
                                 print MiddlewareStatus()
                             print middlewaremap[i]
                             if i in middlewareproviders:
-                                if len(middlewareproviders) > 0:
+                                if len(middlewareproviders[i]) > 0:
                                     print MiddlewareProviderStatus()
                                     for k in sorted(middlewareproviders[i].keys()):
                                         print middlewareproviders[i][k]
