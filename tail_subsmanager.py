@@ -258,31 +258,33 @@ class SchedulerStatus(object):
 
     def __init__(self, index=None):
         self.index = index
-        self.addr = self.lid = self.state = None
+        self.sensm = self.lid = self.state = self.active = None
 
     def parse(self, statusline, timestamp):
-        m = re.search("\[([0-9]*)\]\(--\).*", statusline)
+        m = re.search("\[([0-9]*)\]<-->.*", statusline)
         if m is not None:
             self.index = int(m.group(1))
             return True
 
         #debug3("[%02u](%2u) s%u "PRIu32"/%"PRIu32"/%"PRIu32"/%"PRIu32"/%"PRIu32,
-        m = re.search("\[([0-9]*)\]\(([0-9]+)\) s([0-9]+).*", statusline)
+        m = re.search("\[([0-9]*)\]<([0-9]+)>\(([0-9]+)\) s([0-9]+) a([01]).*", statusline)
         if m is not None:
             self.index = int(m.group(1))
-            self.lid = int(m.group(2))
-            self.state = int(m.group(3))
+            self.sensm = int(m.group(2))
+            self.lid = int(m.group(3))
+            self.state = int(m.group(4))
+            self.active = int(m.group(5))
             return True
 
         return False
 
     def __str__(self):
         if self.index is None:
-            return "[ a| l|_st|"
+            return "[ a|sm]lid|_st|"
         elif self.lid is None:
-            return "[%02u|  ]   |" % (self.index)
+            return "[%02u|  ]   |   |" % (self.index)
         else:
-            return "[%02u|%02u]%3u|" % (self.index, self.lid, self.state)
+            return "[%02u|%02u] %2u|%2u%s|" % (self.index, self.sensm, self.lid, self.state, "*" if self.active else " ")
 
 
 class RegistryStatus(object):
