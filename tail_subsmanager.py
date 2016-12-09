@@ -295,7 +295,7 @@ class RegistryStatus(object):
 
     def parse(self, statusline, timestamp):
         # "m%02d %04X c%u t%PRIu32"
-        m = re.search("m([0-9]+) ([0-9A-F]+) c([0-9]+) t([0-9]+) ([0-9a-f]+) ([0-9a-f]+).*", statusline)
+        m = re.search("m([0-9]+) ([0-9A-F]+) c([0-9]+) t([0-9]+) ([0-9a-fA-F]+) ([0-9a-fA-F]+).*", statusline)
         if m is not None:
             self.index = int(m.group(1))
             self.addr = int(m.group(2), 16)
