@@ -241,17 +241,21 @@ class MiddlewareProviderStatus(object):
             self.outgoing = int(m.group(7))
             self.timeout = int(m.group(8))
             self.live = True
+
+            if self.timeout == 0xFFFFFFFF:
+                self.timeout = "never"
+
             return True
 
         return False
 
     def __str__(self):
         if self.index is None:
-            return "   |mote|e|st|__start___|_contact__|_outgoing_|timeout_tm|"
+            return "   |mote|e|sr|__start___|_contact__|_outgoing_|timeout_tm|"
         elif not self.live:
             return "   |    | |  |          |          |          |          |"
         else:
-            return "   |%4u|%u|%2x|%10u|%10u|%10s|%10u|" % (self.mote, self.expected, self.stream, self.start, self.contact, self.outgoing, self.timeout)
+            return "   |%4u|%u|%2x|%10u|%10u|%10s|%10s|" % (self.mote, self.expected, self.stream, self.start, self.contact, self.outgoing, self.timeout)
 
 
 class SchedulerStatus(object):
